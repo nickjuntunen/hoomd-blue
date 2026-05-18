@@ -546,6 +546,107 @@ class MuVT(Updater):
         return N_dict
 
 
+class MuVT2D(MuVT):
+    r"""Insert and remove particles in the muVT ensemble for 2D simulations.
+
+    Args:
+        trigger (int): Number of timesteps between grand canonical insertions.
+        transfer_types (list): List of type names being transferred from/to the
+          reservoir or between boxes.
+        ngibbs (int): Number of partitions for Gibbs ensemble (1 = grand
+          canonical muVT).
+        max_volume_rescale (float): Maximum step size in ln(A) for Gibbs area
+          moves.
+        volume_move_probability (float): Ratio of area to exchange/transfer
+          moves (Gibbs ensemble).
+
+    This class is identical to `MuVT` except that the Boltzmann acceptance
+    criterion uses the box **area** :math:`A = L_x L_y` instead of the box
+    volume :math:`V = L_x L_y L_z`.  In HOOMD 2D boxes :math:`L_z = 0`, so
+    the raw volume is zero; using the area restores detailed balance.
+
+    .. rubric:: Thermodynamic background
+
+    In the 2D grand-canonical ensemble the acceptance probability for particle
+    insertion is
+
+    .. math::
+
+        P_\mathrm{acc} = \min\!\left(1,\;
+            \frac{z_{2\mathrm{D}}\,A}{(N+1)\,k_\mathrm{B}T}
+            e^{-\beta\,\Delta U}\right)
+
+    and for removal
+
+    .. math::
+
+        P_\mathrm{acc} = \min\!\left(1,\;
+            \frac{N\,k_\mathrm{B}T}{z_{2\mathrm{D}}\,A}
+            e^{-\beta\,\Delta U}\right)
+
+    The fugacity :math:`z_{2\mathrm{D}}` has units of
+    :math:`[\mathrm{energy}]\cdot[\mathrm{area}^{-1}]` (pressure in 2D),
+    whereas `MuVT` uses :math:`[\mathrm{energy}]\cdot[\mathrm{volume}^{-1}]`.
+
+    For Gibbs ensemble simulations the "volume move" becomes an **area move**:
+    the total area :math:`A_1 + A_2` is conserved, and the isotropic rescaling
+    :math:`L \propto A^{1/2}` is already applied by the base class when
+    ``ndimensions == 2``.
+
+    .. rubric:: Mixed precision
+
+    `MuVT2D` uses reduced precision floating point arithmetic when checking
+    for particle overlaps in the local particle reference frame.
+
+    Note:
+        `MuVT2D` must only be used with 2D HPMC integrators
+        (`ConvexPolygon`, `SimplePolygon`, `ConvexSpheropolygon`, `Sphere`
+        with 2D box).
+
+    {inherited}
+
+    **Members defined in** `MuVT2D`:
+
+    Attributes:
+        fugacity (`TypeParameter` [ ``particle type``, `float`]):
+            Particle fugacity
+            :math:`[\mathrm{energy}] \cdot [\mathrm{area}^{-1}]`
+            (**default:** 0).
+        max_volume_rescale (float): Maximum step size in ln(A) (Gibbs
+          ensemble).
+        volume_move_probability (float): Ratio of area to exchange/transfer
+          moves (Gibbs ensemble).
+        transfer_types (list): List of type names being transferred from/to
+          the reservoir or between boxes.
+    """
+
+    __doc__ = inspect.cleandoc(__doc__).replace(
+        "{inherited}", inspect.cleandoc(Updater._doc_inherited)
+    )
+
+    def _attach_hook(self):
+        integrator = self._simulation.operations.integrator
+        if not isinstance(integrator, integrate.HPMCIntegrator):
+            raise RuntimeError("The integrator must be a HPMC integrator.")
+
+        if self._simulation.state._cpp_sys_def.getNDimensions() != 2:
+            raise RuntimeError(
+                "MuVT2D is only valid for 2D simulations (ndimensions == 2). "
+                "Use MuVT for 3D systems."
+            )
+
+        cpp_cls_name = "UpdaterMuVT2D"
+        cpp_cls_name += integrator.__class__.__name__
+        cpp_cls = getattr(_hpmc, cpp_cls_name)
+
+        self._cpp_obj = cpp_cls(
+            self._simulation.state._cpp_sys_def,
+            self.trigger,
+            integrator._cpp_obj,
+            self.ngibbs,
+        )
+
+
 class Shape(Updater):
     """Apply shape updates to the shape definitions defined in the integrator.
 

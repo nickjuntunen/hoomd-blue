@@ -12,6 +12,7 @@
 
 #include "UpdaterGCA.h"
 #include "UpdaterMuVT.h"
+#include "UpdaterMuVT2D.h"
 
 #ifdef ENABLE_HIP
 #include "ComputeFreeVolumeGPU.h"
@@ -32,6 +33,7 @@ void export_spheropolygon(pybind11::module& m)
     export_ComputeFreeVolume<ShapeSpheropolygon>(m, "ComputeFreeVolumeConvexSpheropolygon");
     export_ComputeSDF<ShapeSpheropolygon>(m, "ComputeSDFConvexSpheropolygon");
     export_UpdaterMuVT<ShapeSpheropolygon>(m, "UpdaterMuVTConvexSpheropolygon");
+    export_UpdaterMuVT2D<ShapeSpheropolygon>(m, "UpdaterMuVT2DConvexSpheropolygon");
     export_UpdaterGCA<ShapeSpheropolygon>(m, "UpdaterGCAConvexSpheropolygon");
 
     export_ExternalFieldWall<ShapeSpheropolygon>(m, "WallConvexSpheropolygon");

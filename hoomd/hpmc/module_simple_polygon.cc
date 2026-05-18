@@ -12,6 +12,7 @@
 
 #include "UpdaterGCA.h"
 #include "UpdaterMuVT.h"
+#include "UpdaterMuVT2D.h"
 
 #ifdef ENABLE_HIP
 #include "ComputeFreeVolumeGPU.h"
@@ -32,6 +33,7 @@ void export_simple_polygon(pybind11::module& m)
     export_ComputeFreeVolume<ShapeSimplePolygon>(m, "ComputeFreeVolumeSimplePolygon");
     export_ComputeSDF<ShapeSimplePolygon>(m, "ComputeSDFSimplePolygon");
     export_UpdaterMuVT<ShapeSimplePolygon>(m, "UpdaterMuVTSimplePolygon");
+    export_UpdaterMuVT2D<ShapeSimplePolygon>(m, "UpdaterMuVT2DSimplePolygon");
     export_UpdaterGCA<ShapeSimplePolygon>(m, "UpdaterGCASimplePolygon");
 
     export_ExternalFieldWall<ShapeSimplePolygon>(m, "WallSimplePolygon");

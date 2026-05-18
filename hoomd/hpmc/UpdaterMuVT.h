@@ -215,6 +215,14 @@ template<class Shape> class UpdaterMuVT : public Updater
     //! Get number of particles of a given type
     unsigned int getNumParticlesType(unsigned int type);
 
+    //! Return the effective system "volume" used in acceptance criteria.
+    //! Defaults to 3D volume (Lx·Ly·Lz). Override to return area (Lx·Ly) for
+    //! 2D grand-canonical simulations where Lz == 0.  See UpdaterMuVT2D.
+    virtual Scalar getEffectiveVolume(const BoxDim& box) const
+        {
+        return box.getVolume(false);
+        }
+
     private:
     //! Handle MaxParticleNumberChange signal
     /*! Resize the m_pos_backup array
@@ -637,7 +645,7 @@ template<class Shape> void UpdaterMuVT<Shape>::update(uint64_t timestep)
 
             unsigned int nptl_type = 0;
 
-            Scalar V = m_pdata->getGlobalBox().getVolume();
+            Scalar V = getEffectiveVolume(m_pdata->getGlobalBox());
 
             assert(m_transfer_types.size() > 0);
 
@@ -859,7 +867,7 @@ template<class Shape> void UpdaterMuVT<Shape>::update(uint64_t timestep)
                 tag = getNthTypeTag(type, type_offset);
                 }
 
-            Scalar V = m_pdata->getGlobalBox().getVolume();
+            Scalar V = getEffectiveVolume(m_pdata->getGlobalBox());
             Scalar lnboltzmann(0.0);
 
             if (!m_gibbs)
@@ -1008,7 +1016,7 @@ template<class Shape> void UpdaterMuVT<Shape>::update(uint64_t timestep)
 
         Scalar V_other = 0;
         const BoxDim global_box_old = m_pdata->getGlobalBox();
-        Scalar V = global_box_old.getVolume();
+        Scalar V = getEffectiveVolume(global_box_old);
         unsigned int nglobal = m_pdata->getNGlobal();
 
         Scalar V_new, V_new_other;

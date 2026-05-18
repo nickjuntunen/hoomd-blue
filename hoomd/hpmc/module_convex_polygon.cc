@@ -12,6 +12,7 @@
 
 #include "UpdaterGCA.h"
 #include "UpdaterMuVT.h"
+#include "UpdaterMuVT2D.h"
 
 #ifdef ENABLE_HIP
 #include "ComputeFreeVolumeGPU.h"
@@ -32,6 +33,7 @@ void export_convex_polygon(pybind11::module& m)
     export_ComputeFreeVolume<ShapeConvexPolygon>(m, "ComputeFreeVolumeConvexPolygon");
     export_ComputeSDF<ShapeConvexPolygon>(m, "ComputeSDFConvexPolygon");
     export_UpdaterMuVT<ShapeConvexPolygon>(m, "UpdaterMuVTConvexPolygon");
+    export_UpdaterMuVT2D<ShapeConvexPolygon>(m, "UpdaterMuVT2DConvexPolygon");
     export_UpdaterGCA<ShapeConvexPolygon>(m, "UpdaterGCAConvexPolygon");
 
     export_ExternalFieldWall<ShapeConvexPolygon>(m, "WallConvexPolygon");
